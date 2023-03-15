@@ -276,6 +276,8 @@ def kruskal(g):
             union(x, y, link, rank)
         
     return g_mst
+#la complexité de l'algorithme Kruskal est en O(Elog(V)) où V est le nombre de sommets et E
+#le nombre d'arêtes.
 
 import time
 
