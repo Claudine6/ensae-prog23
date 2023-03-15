@@ -1,0 +1,21 @@
+from graph1 import Graph, graph_from_file
+
+import graphviz
+
+graph2=graphviz.Graph(format="png")
+
+g = graph_from_file("input/network.00.in")
+L=g.min_power(1,4)
+t=L[1]
+
+for nodes in g.nodes:
+    graph2.node(str(nodes))
+    for neighbor in g.graph[nodes]:
+        if nodes in t and neighbor[0] in t :
+            graph2.edge(str(nodes), str(neighbor[0]), fillcolor='red', label=str(neighbor[1]),style='filled')
+        else: 
+            graph2.edge(str(nodes), str(neighbor[0]), label=str(neighbor[1]))
+
+
+graph2.render()
+
