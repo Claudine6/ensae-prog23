@@ -77,7 +77,6 @@ class Graph:
         def visite(nodes,path):
             visited[nodes]=True
             path.append(nodes)
-            print(path)
             if nodes==dest:
                 return path
             elif nodes!=dest:
@@ -135,30 +134,63 @@ class Graph:
             i=i+1
         return L[i],self.get_path_with_power(src,dest,L[i])
 
-    def get_path_and_power(self,src,dest,power):
-        visited={nodes:False for nodes in self.nodes}
-        path=[]
-        nb_edges=len(self.nodes)-1
-        e=0 #pour compter le nombre d'arêtes déja parcourues. 
+    def dfs(self): #question 5 séance 2 
+        depth=0
+        depths={self.nodes[0]:0}
+        parents={self.nodes[0]:[self.nodes[0],0]}
+        visited=[]
+        for nodes in self.nodes:
+            visited.append(nodes)
+            for neighbor,power_min,dist in self.graph[nodes]:
+                if neighbor not in visited :
+                    parents[neighbor]=[nodes,power_min]
+                    depth=depths[nodes]+1 
+                    depths[neighbor]=depth
+        return [depths,parents]
 
-        def visite(nodes,path):
-            visited[nodes]=True
-            path.append(nodes)
-            print(path)
-            while e < nb_edges+1:
-                if nodes==dest:
-                     return path
-                elif nodes!=dest:
-                    for neighbor in self.graph[nodes]:
-                        power_c,neighbor_id=neighbor[1],neighbor[0]
-                        if visited[neighbor_id]==False and power_c<=power:
-                            e = e+1
-                            return visite(neighbor_id,path)
-                        elif visited[neighbor_id]== True and nodes==dest:
-                            return path
-                return None 
-        t=visite(src,path)
-        return t
+
+
+
+    def get_power_and_path(self,src,dest): #question 5 séance 2 
+        depth_1=self.dfs()[0][src]
+        depth_2=self.dfs()[0][dest]
+        parent_1=src
+        parent_2=dest
+        path=[parent_1]
+        L=[]
+        list_power=[]
+
+        if depth_1 > depth_2:
+            while self.dfs()[0][parent_1]>depth_2:
+                list_power.append(self.dfs()[1][parent_1][1])
+                parent_1=self.dfs()[1][parent_1][0]
+                path.append(parent_1)
+            path.append(parent_1)
+                
+        else :
+            while self.dfs()[0][parent_2]>depth_1:
+                L=[parent_2]+L
+                list_power.append(self.dfs()[1][parent_2][1])
+                parent_2=self.dfs()[1][parent_2][0]
+            L=[parent_2]+L
+                
+        while parent_1 != parent_2 :
+            path.append(self.dfs()[1][parent_1][0])
+            L=[self.dfs()[1][parent_2][0]]+L
+            list_power.append(self.dfs()[1][parent_1][1])
+            list_power.append(self.dfs()[1][parent_2][1])
+            parent_1= self.dfs()[1][parent_1][0]
+            parent_2= self.dfs()[1][parent_2][0]
+
+        path.pop()
+        path=path+L
+        print(path)
+        print(list_power)
+
+        return [max(list_power),path]
+
+
+        
 
 
 def graph_from_file(filename):
@@ -215,11 +247,9 @@ def union(nodes_1,nodes_2,link,rank):
         rank[root1]+=1
 
 
-def krustal(g):
-    with open(filename, "r") as file:
-        n, m = map(int, file.readline().split())
-    liste_nodes=list(range(1,n+1))
-    min_tree={nodes:[] for nodes in liste_nodes}
+def kruskal(g):
+    liste_nodes=g.nodes
+    g_mst= Graph(range(1, len(liste_nodes)+1))
     e=0
     i=0
     edges=[]
@@ -227,8 +257,8 @@ def krustal(g):
     link={nodes:nodes for nodes in liste_nodes} # au début chaque noeud est dans un graphe dont il est le seul élément. 
         
     for nodes in liste_nodes : #on crée une liste contenant les arêtes ie une liste de sous-listes
-        #où chaque sous liste comprend les deux sommets et la puissance minimale sur le neoud. 
-        for neighbor in g[nodes]:
+        #où chaque sous liste comprend les deux sommets et la puissance minimale sur le noeud. 
+        for neighbor in g.graph[nodes]:
             edges.append([nodes,neighbor[0],neighbor[1]])
 
     edges_sorted=sorted(edges, key=lambda item: item[2])
@@ -241,19 +271,56 @@ def krustal(g):
 
         if x != y:
             e = e + 1
-            min_tree[n_1].append([n_2,p_m]) #si les deux nodes ne font pas partie du même graphe connexe alors on ajoute l'edge entre les deux.
+            g_mst.add_edge(n_1, n_2, p_m)
+         #si les deux nodes ne font pas partie du même graphe connexe alors on ajoute l'edge entre les deux.
             union(x, y, link, rank)
         
-    return min_tree
+    return g_mst
 
 import time
 
-def estimated_time(filename):
+def estimated_time(filename,filename_1): #question 1 séance 2 
+    #filename est le chemin vers le fichier routesx et filename_1 celui vers le fichier network 
+    #associé
+    g=graph_from_file(filename_1)
     with open(filename, "r") as file:
         n = map(int, file.readline())
         start=time.perf_counter()
         for i in range(20):
             src,dest,power=list(map(int, file.readline().split()))
-            g.min_power(scr,dest)
-        end=timz.perf_counter()
-    return ((end-start)/10)*len(T)
+            g.min_power(src,dest)
+        end=time.perf_counter()
+    return ((end-start)/10)*n
+
+def estimation_2(filename,filename_1): #question 6 séance 2 
+    #filename est le chemin associé à routex et filename_1 celui associé à network
+    g=graph_from_file(filename_1)
+    g_mst=kruskal(g)
+    with open(filename, "r") as file:
+        n = map(int, file.readline())
+        start=time.perf_counter()
+        for i in range(20):
+            src,dest,power=list(map(int, file.readline().split()))
+            g_mst.get_power_and_path(scr,dest)
+        end=time.perf_counter()
+    return ((end-start)/20)*n
+
+def route_x_out(filename,filename_1): #question 6 
+
+    g=graph_from_file(filename)
+    g_mst=kruskal(g)
+    f=open("input/route.x.out","a")
+    with open(filename_1, "r") as file:
+        n = map(int, file.readline())
+        for j in range(n):
+            src,dest,profit=list(map(int, file.readline().split()))
+            power_min=g_mst.get_power_and_path(src,dest)[0]
+            f.write(power_min)
+        f.close()
+
+
+
+
+
+
+    

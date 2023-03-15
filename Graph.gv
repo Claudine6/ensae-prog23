@@ -1,0 +1,30 @@
+graph {
+	1
+	1 -- 2 [label=11 fillcolor=red]
+	1 -- 6 [label=12]
+	1 -- 8 [label=0]
+	2
+	2 -- 1 [label=11 fillcolor=red]
+	2 -- 3 [label=10 fillcolor=red]
+	2 -- 5 [label=4]
+	3
+	3 -- 2 [label=10 fillcolor=red]
+	3 -- 4 [label=4 fillcolor=red]
+	4
+	4 -- 3 [label=4 fillcolor=red]
+	4 -- 10 [label=4]
+	5
+	5 -- 2 [label=4]
+	5 -- 7 [label=14]
+	6
+	6 -- 1 [label=12]
+	7
+	7 -- 5 [label=14]
+	8
+	8 -- 1 [label=0]
+	8 -- 9 [label=14]
+	9
+	9 -- 8 [label=14]
+	10
+	10 -- 4 [label=4]
+}
