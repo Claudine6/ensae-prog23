@@ -181,17 +181,21 @@ class Graph:
     def dfs(self): #question 5 séance 2 
         """Finds the deoth of a node relative to an origin node."""
         depth=0
-        depths={self.nodes[0]:0}
+        depths={}
         parents={self.nodes[0]:[self.nodes[0],0]}
         visited=[]
+        def explore(node,depth):
+            depths[node]=depth
+            visited.append(node)
+            for  neighbor in self.graph[node]:
+                if neighbor not in visited:
+                    explore(neighbor,depth+1)
         for nodes in self.nodes:
-            visited.append(nodes)
-            depth+=1
             for neighbor,power_min,dist in self.graph[nodes]:
-                visited.append(neighbor)
                 if neighbor not in visited :
+                    visited.append(neighbor)
                     parents[neighbor]=[node,power_min]
-                    depths[neighbor]=depth
+        depths=explore(self.node[0],depth)
 
         return depths,parents
 
