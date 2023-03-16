@@ -186,10 +186,11 @@ class Graph:
         visited=[]
         for nodes in self.nodes:
             visited.append(nodes)
+            depth+=1
             for neighbor,power_min,dist in self.graph[nodes]:
+                visited.append(neighbor)
                 if neighbor not in visited :
                     parents[neighbor]=[node,power_min]
-                    depth=depths[nodes]+1 
                     depths[neighbor]=depth
 
         return depths,parents
@@ -415,6 +416,9 @@ def route_x_out(filename,filename_1): #question 6
             power_min=g_mst.get_power_and_path(src,dest)[0]
             f.write(power_min)
         f.close()
+
+# Séance 4 
+
 
 
 
