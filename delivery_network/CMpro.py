@@ -429,6 +429,38 @@ def route_x_out(filename,filename_1): #question 6
 
 # Séance 4 
 
+def preprocessing(filename):
+        with open(filename, "r") as file:
+        n, m = map(int, file.readline().split())
+        truck=[]
+        for i in range(n):
+            truck.append(list(map(int, file.readline().split())))
+        truck_cout=sorted(truck, key=lambda item: item[1])
+        L=truck
+        while L!=truck_cout:
+            L=truck_cout
+            for i in range(len(truck_cout)):
+                for j in range(i+1,len(truck_cout)):
+                    if truck_cout[i][0]==truck_cout[j][0]
+                    del truck_cout[j]
+
+        truck_cout_2=(sorted(truck_cout, key=lambda item: item[0])).reverse()
+        M=truck_cout
+        while M!=truck_cout_2:
+            M=truck_cout_2
+            for i in range(len(truck_cout_2)):
+                for j in range(i+1,len(truck_cout_2)):
+                    if truck_cout_2[i][1]==truck_cout[j][1]
+                    del truck_cout_2[j]
+        return truck_cout_2
+
+
+
+
+        
+
+
+
 
 
 
