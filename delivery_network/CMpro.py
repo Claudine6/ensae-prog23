@@ -184,7 +184,6 @@ class Graph:
         depths={}
         parents={self.nodes[0]:[self.nodes[0],0]}
         visited=[]
-        visited_1=[self.nodes[0]]
 
         def explore(node,depth):
             depths[node]=depth
@@ -192,15 +191,16 @@ class Graph:
             for neighbor,power_min,dist in self.graph[node]:
                 if neighbor not in visited:
                     explore(neighbor,depth+1)
-            return depths  
+                    parents[neighbor]=[node,power_min]
+            return depths, parents  
               
-        depths=explore(self.nodes[0], 0)
+        depths,parents=explore(self.nodes[0], 0)
         
-        for nodes in self.nodes:
+        """for nodes in self.nodes:
             for neighbor,power_min,dist in self.graph[nodes]:
                 if neighbor not in visited_1 :
                     visited_1.append(neighbor)
-                    parents[neighbor]=[nodes,power_min]
+                    parents[neighbor]=[nodes,power_min]"""
         
 
         return depths,parents
@@ -221,35 +221,37 @@ class Graph:
         parent_1=src
         parent_2=dest
         path=[parent_1]
-        L=[]
+        L=[dest]
         list_power=[]
 
-        if depth_1 > depth_2:
-            while self.dfs()[0][parent_1]>depth_2:
-                list_power.append(self.dfs()[1][parent_1][1])
-                parent_1=self.dfs()[1][parent_1][0]
+
+        if src==dest :
+            return [0,src] 
+        else : 
+            if depth_1 > depth_2:
+                while self.dfs()[0][parent_1]>depth_2:
+                    list_power.append(self.dfs()[1][parent_1][1])
+                    parent_1=self.dfs()[1][parent_1][0]
+                    path.append(parent_1)
                 path.append(parent_1)
-            path.append(parent_1)
-                
-        else :
-            while self.dfs()[0][parent_2]>depth_1:
-                L=[parent_2]+L
+                    
+            elif depth_1 < depth_2:
+                while self.dfs()[0][parent_2]>depth_1:
+                    list_power.append(self.dfs()[1][parent_2][1])
+                    parent_2=self.dfs()[1][parent_2][0]
+                    L=[parent_2]+L
+                L=[parent_2]+L 
+                    
+            while parent_1 != parent_2 :
+                path.append(self.dfs()[1][parent_1][0])
+                L=[self.dfs()[1][parent_2][0]]+L
+                list_power.append(self.dfs()[1][parent_1][1])
                 list_power.append(self.dfs()[1][parent_2][1])
-                parent_2=self.dfs()[1][parent_2][0]
-            L=[parent_2]+L
-                
-        while parent_1 != parent_2 :
-            path.append(self.dfs()[1][parent_1][0])
-            L=[self.dfs()[1][parent_2][0]]+L
-            list_power.append(self.dfs()[1][parent_1][1])
-            list_power.append(self.dfs()[1][parent_2][1])
-            parent_1= self.dfs()[1][parent_1][0]
-            parent_2= self.dfs()[1][parent_2][0]
+                parent_1= self.dfs()[1][parent_1][0]
+                parent_2= self.dfs()[1][parent_2][0]
 
         path.pop()
         path=path+L
-        print(path)
-        print(list_power)
 
         return [max(list_power),path]
 
@@ -420,38 +422,39 @@ def route_x_out(filename,filename_1): #question 6
     g_mst=kruskal(g)
     f=open("input/route.x.out","a")
     with open(filename_1, "r") as file:
-        n = map(int, file.readline())
-        for j in range(n):
+        n = int(file.readline())
+        for j in range(n-1):
             src,dest,profit=list(map(int, file.readline().split()))
+            g_mst.dfs()
             power_min=g_mst.get_power_and_path(src,dest)[0]
-            f.write(power_min)
+            f.write(str(power_min)+"\n")
         f.close()
 
 # Séance 4 
 
 def preprocessing(filename):
         with open(filename, "r") as file:
-        n, m = map(int, file.readline().split())
-        truck=[]
-        for i in range(n):
-            truck.append(list(map(int, file.readline().split())))
-        truck_cout=sorted(truck, key=lambda item: item[1])
-        L=truck
-        while L!=truck_cout:
-            L=truck_cout
-            for i in range(len(truck_cout)):
-                for j in range(i+1,len(truck_cout)):
-                    if truck_cout[i][0]==truck_cout[j][0]
-                    del truck_cout[j]
+            n= map(int, file.readline().split())
+            truck=[]
+            for i in range(n):
+                truck.append(list(map(int, file.readline().split())))
+            truck_cout=sorted(truck, key=lambda item: item[1])
+            L=truck
+            while L!=truck_cout:
+                L=truck_cout
+                for i in range(len(truck_cout)):
+                    for j in range(i+1,len(truck_cout)):
+                        if truck_cout[i][0]==truck_cout[j][0]:
+                            del truck_cout[j]
 
-        truck_cout_2=(sorted(truck_cout, key=lambda item: item[0])).reverse()
-        M=truck_cout
-        while M!=truck_cout_2:
-            M=truck_cout_2
-            for i in range(len(truck_cout_2)):
-                for j in range(i+1,len(truck_cout_2)):
-                    if truck_cout_2[i][1]==truck_cout[j][1]
-                    del truck_cout_2[j]
+            truck_cout_2=(sorted(truck_cout, key=lambda item: item[0])).reverse()
+            M=truck_cout
+            while M!=truck_cout_2:
+                M=truck_cout_2
+                for i in range(len(truck_cout_2)):
+                    for j in range(i+1,len(truck_cout_2)):
+                        if truck_cout_2[i][1]==truck_cout[j][1]:
+                            del truck_cout_2[j]
         return truck_cout_2
 
 
