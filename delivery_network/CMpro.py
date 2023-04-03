@@ -423,6 +423,7 @@ def route_x_out(filename,filename_1): #question 6
     f=open("input/route.x.out","a")
     with open(filename_1, "r") as file:
         n = int(file.readline())
+        f.write(str(n)+"\n")
         for j in range(n-1):
             src,dest,profit=list(map(int, file.readline().split()))
             g_mst.dfs()
@@ -432,30 +433,70 @@ def route_x_out(filename,filename_1): #question 6
 
 # Séance 4 
 
-def preprocessing(filename):
-        with open(filename, "r") as file:
-            n= map(int, file.readline().split())
-            truck=[]
-            for i in range(n):
-                truck.append(list(map(int, file.readline().split())))
-            truck_cout=sorted(truck, key=lambda item: item[1])
-            L=truck
-            while L!=truck_cout:
-                L=truck_cout
-                for i in range(len(truck_cout)):
-                    for j in range(i+1,len(truck_cout)):
-                        if truck_cout[i][0]==truck_cout[j][0]:
-                            del truck_cout[j]
+def preprocessing_test(filename):
+    with open(filename, "r") as file:
+        n=int(file.readline())
+        truck=[]
+        for i in range(n):
+            truck.append(list(map(int, file.readline().split())))
 
-            truck_cout_2=(sorted(truck_cout, key=lambda item: item[0])).reverse()
-            M=truck_cout
-            while M!=truck_cout_2:
-                M=truck_cout_2
-                for i in range(len(truck_cout_2)):
-                    for j in range(i+1,len(truck_cout_2)):
-                        if truck_cout_2[i][1]==truck_cout[j][1]:
-                            del truck_cout_2[j]
-        return truck_cout_2
+
+        truck_cout=sorted(truck, key=lambda item: item[1])
+        print(truck_cout)
+        to_delete=[]
+        for i in range(len(truck_cout)-1):
+            for j in range(i+1,len(truck_cout)):
+                if truck_cout[j][0]<=truck_cout[i][0] and truck_cout[j] not in to_delete:
+                    to_delete.append(truck_cout[j])
+                    print(to_delete)
+                    print(i,j)
+
+        for i in range(len(to_delete)):
+            truck_cout.remove(to_delete[i])
+
+
+        truck_cout_2=sorted(truck_cout, key=lambda item: item[0])
+        print(truck_cout_2)
+
+        to_delete_2=[]
+        for i in range(1,len(truck_cout_2)):
+            for j in range(0,i):
+                if truck_cout_2[j][1]>=truck_cout_2[i][1] and truck_cout_2[j] not in to_delete_2:
+                    to_delete_2.append(truck_cout[j])
+                    print(to_delete_2) 
+                    print(i,j)
+
+        for j in range(len(to_delete_2)):
+            truck_cout_2.remove(to_delete_2[j])
+
+    return truck_cout_2 
+
+def function(filename,filename_1,filename_2):
+#filename pour network, filename_1 pour routes et filename_2 pour trucks
+    route_x_out(filename, filename_1)
+    cout_profit=[]
+    power=[]
+    trajet=[]
+    trucks=preprocessing_test(filename_2)
+    with open("input/route.x.out","r") as file:
+        m=int(file.readline())
+        for j in range(n):
+            power.append(int(file.readline().split()))
+    with open(filename_1, "r") as file:
+        n=int(file.readline())
+        for j in range(n):
+            trajet.append(list(map(int, file.readline().split())))
+        for j in range(len(power)):
+            for k in range(len(trucks)):
+                if trucks[k][0]>=power[j]:
+                    trucks_possible.append(trucks[k])
+                truck_possible=sorted(trucks_possible, key=lambda item: item[1])
+                cout_profit.append([truck_possible[0],trajet[j]])
+                trucks_possible=[]
+    return cout_profit
+        
+
+
 
 
 
