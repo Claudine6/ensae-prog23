@@ -466,6 +466,7 @@ def preprocessing_test(filename):
     return truck_cout_2 
 
 def etape_2(filename,filename_1,filename_2):
+    """ Returns a list of lists. Each list is [power_of the truck, cost of the truck, profit of the route]"""
 #filename pour network, filename_1 pour routes et filename_2 pour trucks
     route_x_out(filename, filename_1)
     cout_profit=[]
@@ -478,12 +479,10 @@ def etape_2(filename,filename_1,filename_2):
         m=int(file.readline())
         for j in range(m):
             power.append(int(file.readline())) #liste avec les puissances min pour chaque trajet
-        print(len(power))
     with open(filename_1, "r") as file:
         n=int(file.readline())
         for j in range(n):
             trajet.append(list(map(int, file.readline().split()))) #liste avec les trajets et leurs profits
-        print(len(trajet))
         for j in range(len(power)):
             trucks_possible=[]
             for k in range(len(trucks)):
@@ -494,23 +493,29 @@ def etape_2(filename,filename_1,filename_2):
             trucks_possible=[]
     return cout_profit
 
-def force_brute(filename,filename_1,filename_2,B,):
-    cout_profit=etape_2(filename,fileaname_1,filename_2)
-
+def force_brute(filename,filename_1,filename_2,B):
+    cout_profit=etape_2(filename,filename_1,filename_2)
+    
     def force_brute_1(B,camions,camions_selected=[]):
-        if elements: #est ce qu'il reste encore des éléments à traiter ? si non alors on les a déjà tous passés en revue
-            profit_1, liste_trucks=force_brute_1(B,camions[1:],camions_selected) #ici on considère une combinaison privée de notre camion (elements[1:])  
+
+        if camions!=[]: #est ce qu'il reste encore des éléments à traiter ? si non alors on les a déjà tous passés en revue
+            profit_1, liste_trucks_1=force_brute_1(B,camions[1:],camions_selected) #ici on considère une combinaison privée de notre camion (elements[1:])  
             truck=camions[0]
-            if truck[1]<= B:  #on vérifie qu'on peut ajouter le camion en comparant son cout au budget. 
-                profit_2,liste_trucks_2=force_brute_1(B-truck[1],camions[1:],camions_selected+truck) #ici on a ajouté le camion dans la combinaison 
-                if profit_1 < profit_2 : #on ne conserve que les combinaisons avec les plus grands profits 
+            if truck[1]<= B:
+                camions_selected.append(truck)  #on vérifie qu'on peut ajouter le camion en comparant son cout au budget. 
+                profit_2,liste_trucks_2=force_brute_1(B-truck[1],camions[1:],camions_selected) #ici on a ajouté le camion dans la combinaison 
+                if profit_1 < profit_2 : #on ne conserve que la combinaison avec le plus grand profit 
                     return profit_2,liste_trucks_2
             return profit_1,liste_trucks_1
 
-        else : 
-            return sum([i[2] for i in camions_selected]), camions_selected
+        else :
+            if camions_selected!=[]:  
+                return  sum([i[2] for i in camions_selected]), camions_selected
 
-    return force_brute_1(B,cout_profit,[])
+            else :
+                return (0,[])
+
+    return force_brute_1(B,cout_profit)
 
 
 
