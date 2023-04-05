@@ -442,36 +442,30 @@ def preprocessing_test(filename):
 
 
         truck_cout=sorted(truck, key=lambda item: item[1])
-        print(truck_cout)
         to_delete=[]
         for i in range(len(truck_cout)-1):
             for j in range(i+1,len(truck_cout)):
                 if truck_cout[j][0]<=truck_cout[i][0] and truck_cout[j] not in to_delete:
                     to_delete.append(truck_cout[j])
-                    print(to_delete)
-                    print(i,j)
 
         for i in range(len(to_delete)):
             truck_cout.remove(to_delete[i])
 
 
         truck_cout_2=sorted(truck_cout, key=lambda item: item[0])
-        print(truck_cout_2)
 
         to_delete_2=[]
         for i in range(1,len(truck_cout_2)):
             for j in range(0,i):
                 if truck_cout_2[j][1]>=truck_cout_2[i][1] and truck_cout_2[j] not in to_delete_2:
                     to_delete_2.append(truck_cout[j])
-                    print(to_delete_2) 
-                    print(i,j)
 
         for j in range(len(to_delete_2)):
             truck_cout_2.remove(to_delete_2[j])
 
     return truck_cout_2 
 
- def etape_2(filename,filename_1,filename_2):
+def etape_2(filename,filename_1,filename_2):
 #filename pour network, filename_1 pour routes et filename_2 pour trucks
     route_x_out(filename, filename_1)
     cout_profit=[]
@@ -483,7 +477,7 @@ def preprocessing_test(filename):
     with open("input/route.x.out","r") as file:
         m=int(file.readline())
         for j in range(m):
-            power.append(int(file.readline().split())) #liste avec les puissances min pour chaque trajet
+            power.append(int(file.readline())) #liste avec les puissances min pour chaque trajet
     with open(filename_1, "r") as file:
         n=int(file.readline())
         for j in range(n):
@@ -493,9 +487,30 @@ def preprocessing_test(filename):
                 if trucks[k][0]>=power[j]:
                     trucks_possible.append(trucks[k]) #on récupère les camions dont la puissance permet de réaliser le trajet
                 truck_possible=sorted(trucks_possible, key=lambda item: item[1])
-                cout_profit.append([truck_possible[0],trajet[j][2]]) #on stocke le camion possible dont le cout est minimum et le profit sur ce trajet
+                cout_profit.append([truck_possible[0]+[trajet[j][2]]]) #on stocke le camion possible dont le cout est minimum et le profit sur ce trajet
                 trucks_possible=[]
     return cout_profit
+
+def force_brute(filename,filename_1,filename_2,B,):
+    cout_profit=etape_2(filename,fileaname_1,filename_2)
+
+    def force_brute_1(B,camions,camions_selected=[]):
+        if elements: #est ce qu'il reste encore des éléments à traiter ? si non alors on les a déjà tous passés en revue
+            profit_1, liste_trucks=force_brute_1(B,camions[1:],camions_selected) #ici on considère une combinaison privée de notre camion (elements[1:])  
+            truck=camions[0]
+            if truck[1]<= B:  #on vérifie qu'on peut ajouter le camion en comparant son cout au budget. 
+                profit_2,liste_trucks_2=force_brute_1(B-truck[1],camions[1:],camions_selected+truck) #ici on a ajouté le camion dans la combinaison 
+                if profit_1 < profit_2 : #on ne conserve que les combinaisons avec les plus grands profits 
+                    return profit_2,liste_trucks_2
+            return profit_1,liste_trucks_1
+
+        else : 
+            return sum([i[2] for i in camions_selected]), camions_selected
+
+    return force_brute_1(B,cout_profit,[])
+
+
+
         
 
 
