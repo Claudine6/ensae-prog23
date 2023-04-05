@@ -471,27 +471,29 @@ def preprocessing_test(filename):
 
     return truck_cout_2 
 
-def function(filename,filename_1,filename_2):
+ def etape_2(filename,filename_1,filename_2):
 #filename pour network, filename_1 pour routes et filename_2 pour trucks
     route_x_out(filename, filename_1)
     cout_profit=[]
     power=[]
     trajet=[]
     trucks=preprocessing_test(filename_2)
+    trucks_possible=[]
+    truck_possible=[]
     with open("input/route.x.out","r") as file:
         m=int(file.readline())
-        for j in range(n):
-            power.append(int(file.readline().split()))
+        for j in range(m):
+            power.append(int(file.readline().split())) #liste avec les puissances min pour chaque trajet
     with open(filename_1, "r") as file:
         n=int(file.readline())
         for j in range(n):
-            trajet.append(list(map(int, file.readline().split())))
+            trajet.append(list(map(int, file.readline().split()))) #liste avec les trajets et leurs profits
         for j in range(len(power)):
             for k in range(len(trucks)):
                 if trucks[k][0]>=power[j]:
-                    trucks_possible.append(trucks[k])
+                    trucks_possible.append(trucks[k]) #on récupère les camions dont la puissance permet de réaliser le trajet
                 truck_possible=sorted(trucks_possible, key=lambda item: item[1])
-                cout_profit.append([truck_possible[0],trajet[j]])
+                cout_profit.append([truck_possible[0],trajet[j][2]]) #on stocke le camion possible dont le cout est minimum et le profit sur ce trajet
                 trucks_possible=[]
     return cout_profit
         
