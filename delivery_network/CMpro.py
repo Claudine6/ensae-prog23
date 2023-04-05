@@ -478,17 +478,20 @@ def etape_2(filename,filename_1,filename_2):
         m=int(file.readline())
         for j in range(m):
             power.append(int(file.readline())) #liste avec les puissances min pour chaque trajet
+        print(len(power))
     with open(filename_1, "r") as file:
         n=int(file.readline())
         for j in range(n):
             trajet.append(list(map(int, file.readline().split()))) #liste avec les trajets et leurs profits
+        print(len(trajet))
         for j in range(len(power)):
+            trucks_possible=[]
             for k in range(len(trucks)):
                 if trucks[k][0]>=power[j]:
                     trucks_possible.append(trucks[k]) #on récupère les camions dont la puissance permet de réaliser le trajet
-                truck_possible=sorted(trucks_possible, key=lambda item: item[1])
-                cout_profit.append([truck_possible[0]+[trajet[j][2]]]) #on stocke le camion possible dont le cout est minimum et le profit sur ce trajet
-                trucks_possible=[]
+            truck_possible=sorted(trucks_possible, key=lambda item: item[1])
+            cout_profit.append(truck_possible[0]+[trajet[j][2]]) #on stocke le camion possible dont le cout est minimum et le profit sur ce trajet
+            trucks_possible=[]
     return cout_profit
 
 def force_brute(filename,filename_1,filename_2,B,):
