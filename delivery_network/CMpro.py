@@ -141,7 +141,7 @@ class Graph:
         return liste 
 
 
-    def connected_components_set(self):
+    def connected_components_set(self) :
         """
         The result should be a set of frozensets (one per component), 
         For instance, for network01.in: {frozenset({1, 2, 3}), frozenset({4, 5, 6, 7})}
@@ -170,41 +170,41 @@ class Graph:
         on the path between src and dest.
         path: one path between src and dest
         """
-        L=[]
-        N=[]
+        L = []
+        N = []
         for nodes in self.nodes :
             N.append(nodes)
             for city in self.graph[nodes]:
-                if city[0] not in N: #pour ne pas prendre deux fois la même puissance pour une même arrête
+                if city[0] not in N : #pour ne pas prendre deux fois la même puissance pour une même arrête
                    L.append(city[1])
         L.sort()
         i=0 
-        while i<len(L) and self.get_path_with_power(src,dest,L[i])== None:
-            i=i+1
+        while i<len(L) and self.get_path_with_power(src, dest, L[i])== None:
+            i = i + 1
 
-        return L[i],self.get_path_with_power(src,dest,L[i])
+        return L[i],self.get_path_with_power(src, dest, L[i])
 
-    def dfs(self): #question 5 séance 2 
+    def dfs(self) : #question 5 séance 2 
         """Finds the deoth of a node relative to an origin node."""
-        depth=0
-        depths={}
-        parents={self.nodes[0]:[self.nodes[0],0]}
-        visited=[]
+        depth = 0
+        depths = {}
+        parents = {self.nodes[0]:[self.nodes[0],0]}
+        visited = []
 
-        def explore(node,depth):
-            depths[node]=depth
+        def explore(node, depth):
+            depths[node] = depth
             visited.append(node)
-            for neighbor,power_min,dist in self.graph[node]:
+            for neighbor, power_min, dist in self.graph[node]:
                 if neighbor not in visited:
-                    explore(neighbor,depth+1)
-                    parents[neighbor]=[node,power_min]
+                    explore(neighbor, depth+1)
+                    parents[neighbor] = [node, power_min]
             return depths, parents  
               
-        depths,parents=explore(self.nodes[0], 0)
+        depths, parents = explore(self.nodes[0], 0)
         
         
 
-        return depths,parents
+        return  depths, parents
 
 
     """
@@ -482,7 +482,7 @@ def etape_2(filename,filename_1,filename_2):
         m=int(file.readline())
         for j in range(m):
             power.append(int(file.readline())) #liste avec les puissances min pour chaque trajet
-    print(len(power))
+
     with open(filename_1, "r") as file:
         n=int(file.readline())
         for j in range(n):
@@ -511,9 +511,8 @@ def force_brute_1(B,camions,camions_selected=None):
         truck=camions[0]
         if truck[1]<= B and truck not in camions_selected: #on vérifie qu'on peut ajouter le camion en comparant son cout au budget.
             camions_selected.append(truck)  
-            print(truck,B)
             profit_2,liste_trucks_2=force_brute_1(B-truck[1],camions[1:],camions_selected) #ici on a ajouté le camion dans la combinaison 
-            print(profit_1,profit_2)
+    
             if profit_1 < profit_2 : #on ne conserve que la combinaison avec le plus grand profit 
                 return profit_2,liste_trucks_2
         return profit_1,liste_trucks_1
@@ -587,9 +586,7 @@ def programmation_dynamique(B,camions,n):
         if c>=e[1] and matrice[n][c] == matrice[n-1][c-e[1]] + e[2]:
             trucks_selected.append(e)
             c=c-e[1]
-            print("c vaut" + str(c))
         n=n-1
-        print ("n vaut" + str(n))
     
     return matrice[-1][-1],trucks_selected
 
@@ -646,7 +643,6 @@ def solutions_approximatives(cout_profit,B) :
         i=i+1
 
     n=len(liste_trucks)
-    print(s)
 
     return sum([j[2] for j in liste_trucks]),liste_trucks
 
