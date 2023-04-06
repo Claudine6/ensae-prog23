@@ -71,29 +71,59 @@ class Graph:
     
 
     def get_path_with_power(self, src, dest, power):
-        visited={nodes:False for nodes in self.nodes}
-        path=[]
+        """ 
+        Returns one path between a node source and a destination.
+        Parameters:
+        -----------
+        src : NodeType, the source node
+        dest : NodeType, the destination node
+        power: numeric the power of the truck we consider.
 
-        def visite(nodes,path):
-            visited[nodes]=True
-            path.append(nodes)
-            print(path)
-            if nodes==dest:
+        Outpouts:
+        ---------
+        path: list (of nodes) 
+
+        We use booleans in order not to have any 'infinite' loop.
+        """
+        def dfs(src, dest, path=[]):
+            # Ajouter le nœud de départ au chemin actuel
+            path = path + [src]
+
+            # Vérifier si le nœud de départ est égal au nœud d'arrivée
+            if src == dest:
                 return path
-            elif nodes!=dest:
-                for neighbor in self.graph[nodes]:
-                    power_c,neighbor_id=neighbor[1],neighbor[0]
-                    if visited[neighbor_id]==False and power_c<=power:
-                        return visite(neighbor_id,path)
-                    elif visited[neighbor_id]== True and nodes==dest:
-                        return path
-            return None 
-        
-        t=visite(src,path)
+
+            # Vérifier si le nœud de départ existe dans le graphe
+            if src not in self.graph:
+                return None
+
+            # Parcourir les voisins du nœud de départ
+            for node in self.graph[src]:
+                # Vérifier si le voisin n'a pas encore été visité et si la puissance de l'arête
+                # est inférieure à celle du camion. 
+                if node[0] not in path and node[1] <= power:
+                    # Appel récursif pour explorer le voisin
+                    new_path = dfs(node[0], dest, path)
+                    if new_path is not None:
+                        return new_path
+
+        t = dfs(src, dest)
         return t
+
+    """
+    Result of the test (tests/test_s1q3_node_reachable.py):
+    ..
+    ----------------------------------------------------------------------
+    Ran 2 tests in 0.000s
+
+    OK
+    """
     
 
     def connected_components(self):
+        """ Another function is used to do a deep first search (dfs).
+        Returns a list of nodes that are in the same related graph.
+        """
         liste=[]
         node_visited={nodes:False for nodes in self.nodes}
 
@@ -111,54 +141,123 @@ class Graph:
         return liste 
 
 
-    def connected_components_set(self):
+    def connected_components_set(self) :
         """
         The result should be a set of frozensets (one per component), 
         For instance, for network01.in: {frozenset({1, 2, 3}), frozenset({4, 5, 6, 7})}
         """
         return set(map(frozenset, self.connected_components()))
+
+    """
+    Results of the test (tests/test_s1q2_connected_components.py):
+    ..
+    ----------------------------------------------------------------------
+    Ran 2 tests in 0.000s
+
+    OK
+
+    For network.02.in:
+    {frozenset({9}), frozenset({8}), frozenset({7}),
+    frozenset({10}), frozenset({6}), frozenset({1, 2, 3, 4}), frozenset({5})}
+    """
     
     def min_power(self, src, dest):
         """
         Should return path, min_power. 
+        Outputs:
+        ---------
+        min_power the minimum power that a truck should have in order to be able to drive 
+        on the path between src and dest.
+        path: one path between src and dest
         """
-        L=[]
-        N=[]
+        L = []
+        N = []
         for nodes in self.nodes :
             N.append(nodes)
             for city in self.graph[nodes]:
-                if city[0] not in N: #pour ne pas prendre deux fois la même puissance pour une même arrête
+                if city[0] not in N : #pour ne pas prendre deux fois la même puissance pour une même arrête
                    L.append(city[1])
         L.sort()
         i=0 
-        while i<len(L) and self.get_path_with_power(src,dest,L[i])== None:
-            i=i+1
-        return L[i],self.get_path_with_power(src,dest,L[i])
+        while i<len(L) and self.get_path_with_power(src, dest, L[i])== None:
+            i = i + 1
 
-    def get_path_and_power(self,src,dest,power):
-        visited={nodes:False for nodes in self.nodes}
-        path=[]
-        nb_edges=len(self.nodes)-1
-        e=0 #pour compter le nombre d'arêtes déja parcourues. 
+        return L[i],self.get_path_with_power(src, dest, L[i])
 
-        def visite(nodes,path):
-            visited[nodes]=True
-            path.append(nodes)
-            print(path)
-            while e < nb_edges+1:
-                if nodes==dest:
-                     return path
-                elif nodes!=dest:
-                    for neighbor in self.graph[nodes]:
-                        power_c,neighbor_id=neighbor[1],neighbor[0]
-                        if visited[neighbor_id]==False and power_c<=power:
-                            e = e+1
-                            return visite(neighbor_id,path)
-                        elif visited[neighbor_id]== True and nodes==dest:
-                            return path
-                return None 
-        t=visite(src,path)
-        return t
+    def dfs(self) : #question 5 séance 2 
+        """Finds the deoth of a node relative to an origin node."""
+        depth = 0
+        depths = {}
+        parents = {self.nodes[0]:[self.nodes[0],0]}
+        visited = []
+
+        def explore(node, depth):
+            depths[node] = depth
+            visited.append(node)
+            for neighbor, power_min, dist in self.graph[node]:
+                if neighbor not in visited:
+                    explore(neighbor, depth+1)
+                    parents[neighbor] = [node, power_min]
+            return depths, parents  
+              
+        depths, parents = explore(self.nodes[0], 0)
+        
+        
+
+        return  depths, parents
+
+
+    """
+    s2q14:
+    Looking for the best path (i.e. with the minimal power)
+    and the path which is associated with,
+    thanks to the dfs function.
+    """
+
+    def get_power_and_path(self,src,dest): #question 5 séance 2
+        """Finds the minimum power and the path from src to dest but using the minimum weight 
+        spanning tree.""" 
+        depth_1=self.dfs()[0][src]
+        depth_2=self.dfs()[0][dest]
+        parent_1=src
+        parent_2=dest
+        path=[parent_1]
+        L=[dest]
+        list_power=[]
+
+
+        if src==dest :
+            return [0,src] 
+        else : 
+            if depth_1 > depth_2:
+                while self.dfs()[0][parent_1]>depth_2:
+                    list_power.append(self.dfs()[1][parent_1][1])
+                    parent_1=self.dfs()[1][parent_1][0]
+                    path.append(parent_1)
+                path.append(parent_1)
+                    
+            elif depth_1 < depth_2:
+                while self.dfs()[0][parent_2]>depth_1:
+                    list_power.append(self.dfs()[1][parent_2][1])
+                    parent_2=self.dfs()[1][parent_2][0]
+                    L=[parent_2]+L
+                L=[parent_2]+L 
+                    
+            while parent_1 != parent_2 :
+                path.append(self.dfs()[1][parent_1][0])
+                L=[self.dfs()[1][parent_2][0]]+L
+                list_power.append(self.dfs()[1][parent_1][1])
+                list_power.append(self.dfs()[1][parent_2][1])
+                parent_1= self.dfs()[1][parent_1][0]
+                parent_2= self.dfs()[1][parent_2][0]
+
+        path.pop()
+        path=path+L
+
+        return [max(list_power),path]
+
+
+        
 
 
 def graph_from_file(filename):
@@ -196,11 +295,41 @@ def graph_from_file(filename):
                 raise Exception("Format incorrect")
     return g
 
-def find(nodes, link): #on veut trouver grâce à cette fonction dans quel graphe le noeud est.
-        #si deux noeuds ont le même link alors ils sont dans le même graphe
-        if link[nodes]==nodes: 
-            return nodes
-        return find(link[nodes],link)
+"""
+Result for s1q1 (tests/test_s1q1_graph_loading.py):
+...
+----------------------------------------------------------------------
+Ran 3 tests in 0.001s
+
+OK
+
+Result for s1q4:
+The graph has 10 nodes and 4 edges.
+1-->[(4, 11, 6), (2, 4, 89)]
+2-->[(3, 4, 3), (1, 4, 89)]
+3-->[(2, 4, 3), (4, 4, 2)]
+4-->[(3, 4, 2), (1, 11, 6)]
+5-->[]
+6-->[]
+7-->[]
+8-->[]
+9-->[]
+10-->[]
+"""
+
+"""
+s2q12:
+We create two functions (find and union) needed for our function kruskal.
+"""
+
+def find(nodes, link): 
+    """ Finds the connected graph in which the node is.
+    link is like the index of the connected graph."""
+    #on veut trouver grâce à cette fonction dans quel graphe le noeud est.
+    #si deux noeuds ont le même link alors ils sont dans le même graphe
+    if link[nodes]==nodes: 
+        return nodes
+    return find(link[nodes],link)
      
 
 def union(nodes_1,nodes_2,link,rank):
@@ -215,44 +344,288 @@ def union(nodes_1,nodes_2,link,rank):
         rank[root1]+=1
 
 
-def krustal():
-    min_tree=[]
+def kruskal(g):
+    """Parameters:
+    -------------
+    g: class Graph, the original graph 
+    Outputs:
+    --------
+    g_mst: class Graph, the minimum weight spanning tree.
+    """ 
+    liste_nodes=g.nodes
+    g_mst= Graph(range(1, len(liste_nodes)+1))
     e=0
     i=0
     edges=[]
-    rank={nodes:0 for nodes in self.nodes}
-    link={nodes:nodes for nodes in self.nodes} # au début chaque noeud est dans un graphe dont il est le seul élément. 
+    rank={nodes:0 for nodes in liste_nodes}
+    link={nodes:nodes for nodes in liste_nodes} # au début chaque noeud est dans un graphe dont il est le seul élément. 
         
-    for nodes in self.nodes : #on crée une liste contenant les arêtes ie une liste de sous-listes
-        #où chaque sous liste comprend les deux sommets et la puissance minimale sur le neoud. 
-        for neighbor in self.graph[nodes]:
+    for nodes in liste_nodes : #on crée une liste contenant les arêtes ie une liste de sous-listes
+        #où chaque sous liste comprend les deux sommets et la puissance minimale sur le noeud. 
+        for neighbor in g.graph[nodes]:
             edges.append([nodes,neighbor[0],neighbor[1]])
 
     edges_sorted=sorted(edges, key=lambda item: item[2])
 
-    while e < len(self.nodes) - 1 and i<len(edges_sorted): #on sait que dans un arbre il y a au maximum nbres de nodes - 1 edges
+    while e < len(liste_nodes) - 1 and i<len(edges_sorted): #on sait que dans un arbre il y a au maximum nbres de nodes - 1 edges
         n_1,n_2,p_m = edges_sorted[i] 
         i = i + 1
-        x = self.find(n_1, link)
-        y = self.find(n_2, link)
+        x = find(n_1, link)
+        y = find(n_2, link)
 
         if x != y:
             e = e + 1
-            min_tree.append([n_1,n_2,p_m]) #si les deux nodes ne font pas partie du même graphe connexe alors on ajoute l'edge entre les deux.
-            self.union(x, y, link, rank)
+            g_mst.add_edge(n_1, n_2, p_m)
+         #si les deux nodes ne font pas partie du même graphe connexe alors on ajoute l'edge entre les deux.
+            union(x, y, link, rank)
         
-    return min_tree
+    return g_mst
 
-def estimated_time(filename):
+#la complexité de l'algorithme Kruskal est en O(Elog(V)) où V est le nombre de sommets et E
+#le nombre d'arêtes. 
+
+import time
+
+#question 1 séance 2 
+def estimated_time(filename,filename_1): 
+    """Returns the average execution time of the function min_power. """
+    
+    #filename est le chemin vers le fichier routesx et filename_1 celui vers le fichier network 
+    #associé
+    g=graph_from_file(filename_1)
     with open(filename, "r") as file:
-        n, m = map(int, file.readline().split())
-        g = Graph(range(1, n+1))
+        n = int (file.readline())
         start=time.perf_counter()
-        for t in T[0:10] : # T est ici la liste des trajets allant de src à dest 
-            g.min_power(scr,dest,t)
-        end=timz.perf_counter()
-    return ((end-start)/10)*len(T)
+        for i in range(100):
+            src,dest,power=list(map(int, file.readline().split()))
+            g.min_power(src,dest)
+        end=time.perf_counter()
+    return ((end-start)/100)*n
 
+#question 6 séance 2 
+def estimation_2(filename,filename_1): 
+    """Returns the average execution time of the function get_power_and_path. """
+    #filename est le chemin associé à routex et filename_1 celui associé à network
+    g=graph_from_file(filename_1)
+    g_mst=kruskal(g)
+    with open(filename, "r") as file:
+        n = int(file.readline())
+        start=time.perf_counter()
+        for i in range(100):
+            src,dest,power=list(map(int, file.readline().split()))
+            g_mst.get_power_and_path(src,dest)
+        end=time.perf_counter()
+    return ((end-start)/100)*n
+
+def route_x_out(filename,filename_1): #question 6 
+    #filename_1 est le chemin associé à routex et filename celui associé à network
+    g=graph_from_file(filename)
+    g_mst=kruskal(g)
+    f=open("input/route.x.out","a")
+    with open(filename_1, "r") as file:
+        n = int(file.readline())
+        f.write(str(n)+"\n")
+        for j in range(n):
+            src,dest,profit=list(map(int, file.readline().split()))
+            g_mst.dfs()
+            power_min=g_mst.get_power_and_path(src,dest)[0]
+            f.write(str(power_min)+"\n")
+        f.close()
+
+# Séance 4 à 6 : 
+
+def preprocessing(filename):
+    """Takes a list of trucks and returns another list of trucks 
+    made from the old one but in which some trucks have been removed """
+    with open(filename, "r") as file:
+        n=int(file.readline())
+        truck=[]
+        for i in range(n):
+            truck.append(list(map(int, file.readline().split())))
+
+        truck_cout=sorted(truck, key=lambda item: item[1])
+        to_delete=[]
+        for i in range(len(truck_cout)-1):
+            for j in range(i+1,len(truck_cout)):
+                if truck_cout[j][0]<=truck_cout[i][0] and truck_cout[j] not in to_delete:
+                    to_delete.append(truck_cout[j])
+
+        for i in range(len(to_delete)):
+            truck_cout.remove(to_delete[i])
+
+
+        truck_cout_2=sorted(truck_cout, key=lambda item: item[0])
+
+        to_delete_2=[]
+        for i in range(1,len(truck_cout_2)):
+            for j in range(0,i):
+                if truck_cout_2[j][1]>=truck_cout_2[i][1] and truck_cout_2[j] not in to_delete_2:
+                    to_delete_2.append(truck_cout[j])
+
+        for j in range(len(to_delete_2)):
+            truck_cout_2.remove(to_delete_2[j])
+
+    return truck_cout_2 
+
+def etape_2(filename,filename_1,filename_2):
+    """ Returns a list of lists. Each list is [power_of the truck, cost of the truck, profit of the route]
+    Each list represents one trip from a source to a destination"""
+#filename pour network, filename_1 pour routes et filename_2 pour trucks
+    route_x_out(filename, filename_1)
+    cout_profit=[]
+    power=[]
+    trajet=[]
+    trucks=preprocessing_test(filename_2)
+    trucks_possible=[]
+    truck_possible=[]
+    with open("input/route.x.out","r") as file:
+        m=int(file.readline())
+        for j in range(m):
+            power.append(int(file.readline())) #liste avec les puissances min pour chaque trajet
+
+    with open(filename_1, "r") as file:
+        n=int(file.readline())
+        for j in range(n):
+            trajet.append(list(map(int, file.readline().split()))) #liste avec les trajets et leurs profits
+        for j in range(len(power)):
+            trucks_possible=[]
+            for k in range(len(trucks)):
+                if trucks[k][0]>=power[j]:
+                    trucks_possible.append(trucks[k]) #on récupère les camions dont la puissance permet de réaliser le trajet
+            truck_possible=sorted(trucks_possible, key=lambda item: item[1])
+            cout_profit.append(truck_possible[0]+[trajet[j][2]]) #on stocke le camion possible dont le cout est minimum et le profit sur ce trajet
+            trucks_possible=[]
+    return cout_profit
+
+def force_brute_1(B,camions,camions_selected=None):
+    """"Returns the optimal solution (the list of trucks to buy and the maximum profit) 
+    of the profit-maximization problem under budget constraints
+    B is the budget 
+    camions is a list of trucks 
+    camions_selected represents a list of trucks selected in the same combination
+    """
+    if camions!=[]: #est ce qu'il reste encore des éléments à traiter ? si non alors on les a déjà tous passés en revue
+        if camions_selected!=[]: 
+            B=B-sum(i[1] for i in camions_selected)
+        profit_1, liste_trucks_1=force_brute_1(B,camions[1:],camions_selected) #ici on considère une combinaison privée de notre camion (elements[1:])  
+        truck=camions[0]
+        if truck[1]<= B and truck not in camions_selected: #on vérifie qu'on peut ajouter le camion en comparant son cout au budget.
+            camions_selected.append(truck)  
+            profit_2,liste_trucks_2=force_brute_1(B-truck[1],camions[1:],camions_selected) #ici on a ajouté le camion dans la combinaison 
+    
+            if profit_1 < profit_2 : #on ne conserve que la combinaison avec le plus grand profit 
+                return profit_2,liste_trucks_2
+        return profit_1,liste_trucks_1
+
+    else :
+        if camions_selected!=[]:  
+            return  sum([i[2] for i in camions_selected]), camions_selected
+
+        else :
+            return (0,[])
+
+
+def force_brute(filename,filename_1,filename_2,B):
+    cout_profit=etape_2(filename,filename_1,filename_2)
+
+    return force_brute_1(B,cout_profit)
+
+# là on a la méthode force brute mais qui ne retourne que le profit max
+
+def forcebrute_recursive(camions, B, currentIndex):
+    """ Returns the maximum profit using the brut force method."""
+  # Contrôles de base
+    if B<= 0 or currentIndex >= len(camions):
+        return 0
+
+    # appel récursif après avoir choisi l’élément au niveau de currentIndex
+    # si le poids de l’élément à currentIndex dépasse la capacité, nous ne devrions pas traiter ça
+    profit1 = 0
+    if camions[currentIndex][1] <= B:
+        profit1 = camions[currentIndex][2] + forcebrute_recursive(camions, B - camions[currentIndex][1], currentIndex + 1)
+
+    # appel récursif après exclusion de l’élément au niveau de currentIndex
+    profit2 = forcebrute_recursive(camions, B, currentIndex + 1)
+
+    return max(profit1, profit2)
+
+def solve(filename,filename_1,filename_2,B):
+    """on appelle la fonction pour nos données"""
+    camions=etape_2(filename,filename_1,filename_2)
+    return forcebrute_recursive(camions, B, 0)
+
+
+def programmation_dynamique(B,camions,n):
+    """ Returns the optimal solution of the profit-maximization 
+    problem under budget constraints
+    camions is a list of trucks 
+    n is the length of camions 
+    B is the budget
+    """
+    cout=[i[1] for i in camions]
+    profit=[i[2] for i in camions]
+    matrice=[[0 for i in range(B+1)] for j in range(len(profit)+1)]
+
+    for k in range (0,B):
+        if n==0:
+            return 0
+    for i in range(1,len(profit)+1):
+        for j in range(1,B+1):
+            if cout[i-1]<=j:
+                matrice[i][j] = max(profit[i-1]+matrice[i-1][j-cout[i-1]], matrice[i-1][j]) 
+            #ici on représente les deux choix possibles de solution
+            else :
+                matrice[i][j]= matrice[i-1][j]
+    
+    #cette partie sert à récupérer la liste des camions. 
+    c=B
+    n=len(profit)
+    trucks_selected=[]
+    while c>=0 and n>=0:
+        e=camions[n-1]
+        if c>=e[1] and matrice[n][c] == matrice[n-1][c-e[1]] + e[2]:
+            trucks_selected.append(e)
+            c=c-e[1]
+        n=n-1
+    
+    return matrice[-1][-1],trucks_selected
+
+def question_18_dynamique(filename,filename_1,filename_2,B):
+    #on applique la méthode de la programmation dynamique à nos fichiers
+    cout_profit=etape_2(filename,filename_1,filename_2)
+    n=len(cout_profit)
+    return programmation_dynamique(B, cout_profit, n)
+
+def greedy_knapsack(file_network, file_route, file_truck):
+    """Approximative solution
+    We choose the most profitable routes 
+    until we cannot affect one single truck to a route
+    should return a list with
+    for each route in routes : the truck chosen and the profit
+    and the cost of the approximative solution
+    """
+    B = 25*(10**9)
+    Res = []
+    super_list = etape_2(file_network, file_route, file_truck)
+    n = len(super_list)
+    super_list = sorted(super_list, key=lambda item: item[2], reverse=True) # Tri de la liste pour regarder les itinéraires avec le profit le plus élevé en premier
+    totalcost = 0
+    for j in range(n):
+        i = super_list[j]
+        cost = i[1]
+        totalcost += cost
+        if totalcost <= B:
+            profit_route = i[2]
+            right_truck = [[i[0]] + [i[1]]]
+            Res.append(right_truck + [profit_route]) # Nous ajoutons le camion et le profit à la liste des combinaisons choisies
+            j += 1
+        else:
+            totalcost -= cost
+            j = n-1 # si totalcost ne peut pas être augmentée sans dépasser le budget, nous voulons sortir de la boucle "for"
+    return Res, totalcost
+         
+
+#autre version de l'algorithme glouton pour les solutions approximatives. 
 def solutions_approximatives(cout_profit,B) :
     camions_0=sorted(cout_profit, key=lambda item: item[2] )
     camions=[]
@@ -261,19 +634,44 @@ def solutions_approximatives(cout_profit,B) :
     i=0
     for j in range(len(camions_0)):
         camions.append(camions_0[len(camions_0)-1-j])
-    print(camions)
+    #on obtient un liste de camions triés par ordre décroissant de profit
     while i<len(camions):
         
-        if s+camions[i][1]<=B and camions[i] not in liste_trucks:
+        if s+camions[i][1]<=B and camions[i] not in liste_trucks: #on vérifie que le coût n'excède pas le budget.
             liste_trucks.append(camions[i])
             s=s+camions[i][1]
         i=i+1
 
     n=len(liste_trucks)
-    print(s)
 
     return sum([j[2] for j in liste_trucks]),liste_trucks
 
-B=10
-camion=[[1000,5,300],[300,5,500],[10,3,45]]
-print(solutions_approximatives(camion,B))
+def glouton(filename,filename_1,filename_2,B):
+    #on applique la fonction pour notre cas 
+    cout_profit=etape_2(filename,filename_1,filename_2)
+    return solutions_approximatives(cout_profit, B)
+
+
+        
+    
+
+
+
+        
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+
+    
