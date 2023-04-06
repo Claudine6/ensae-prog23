@@ -1,4 +1,4 @@
-from CMpro import Graph, graph_from_file, find, union, kruskal, route_x_out, preprocessing, etape_2, force_brute, force_brute_1, programmation_dynamique
+from CMpro import Graph, graph_from_file, find, union, kruskal, route_x_out, preprocessing, etape_2, solve, forcebrute_recursive, programmation_dynamique
 
 
 data_path = "input/"
@@ -18,9 +18,9 @@ print(len(etape_2("input/network.1.in","input/routes.1.in","input/trucks1.in")))
  
 B=10
 camions=[[1000,5,300],[300,5,500],[10,3,45]]
-"""print(force_brute_1(B,camions))"""
+print(solve(camions, B))
 
 #print(programmation_dynamique(B,camions,3))
 
-print(g.min_power(1, 7))
-print(g.get_path_with_power(1, 7, 57))
+#print(g.min_power(1, 7))
+#print(g.get_path_with_power(1, 7, 57))

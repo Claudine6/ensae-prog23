@@ -181,7 +181,7 @@ class Graph:
         i=0 
         while i<len(L) and self.get_path_with_power(src,dest,L[i])== None:
             i=i+1
-            
+
         return L[i],self.get_path_with_power(src,dest,L[i])
 
     def dfs(self): #question 5 séance 2 
@@ -496,14 +496,17 @@ def etape_2(filename,filename_1,filename_2):
             trucks_possible=[]
     return cout_profit
 
-def force_brute_1(B,camions,camions_selected=[]):
+def force_brute_1(B,camions,camions_selected=None):
     """"Returns the optimal solution of the profit-maximization 
     problem under budget constraints
     B is the budget 
     camions is a list of trucks 
     camions_selected represents a list of trucks selected in the same combination
     """
-    if camions!=[]:#est ce qu'il reste encore des éléments à traiter ? si non alors on les a déjà tous passés en revue
+    if camions_selected is None:
+        camions_selected = []
+
+    elif camions!=[]:#est ce qu'il reste encore des éléments à traiter ? si non alors on les a déjà tous passés en revue
         if camions_selected!=[]: 
             B=B-sum(i[1] for i in camions_selected)
         profit_1, liste_trucks_1=force_brute_1(B,camions[1:],camions_selected) #ici on considère une combinaison privée de notre camion (elements[1:])  
@@ -523,6 +526,7 @@ def force_brute_1(B,camions,camions_selected=[]):
 
         else :
             return (0,[])
+
 
 def force_brute(filename,filename_1,filename_2,B):
     cout_profit=etape_2(filename,filename_1,filename_2)
@@ -571,7 +575,7 @@ def programmation_dynamique(B,camions,n):
         n=len(cout_profit)
         return programmation_dynamique(B, cout_profit, n)
 
-def greedy_knapsack(self, file_route, file_truck):
+def greedy_knapsack(file_network, file_route, file_truck):
     """Approximative solution
     We choose the most profitable routes 
     until we cannot affect one single truck to a route
@@ -581,7 +585,7 @@ def greedy_knapsack(self, file_route, file_truck):
     """
     B = 25*(10**9)
     Res = []
-    super_list = etape_2(self, file_route, file_truck)
+    super_list = etape_2(file_network, file_route, file_truck)
     n = len(super_list)
     super_list = sorted(super_list, key=lambda item: item[2], reverse=True) # sorting of the list to look at the routes with the highest profit first
     totalcost = 0
@@ -601,20 +605,30 @@ def greedy_knapsack(self, file_route, file_truck):
          
 
 #autre version de l'algorithme glouton pour les solutions approximatives. 
-def solutions_approximatives(filename,filename_1,filename_2,B) :
-    cout_profit=etape_2(filename,filename_1,filename_2)
+def solutions_approximatives(cout_profit,B) :
     camions_0=sorted(cout_profit, key=lambda item: item[2] )
     camions=[]
     liste_trucks=[]
     s=0
+    i=0
     for j in range(len(camions_0)):
-        camions.append(camions_0[len(camions_0)-1-i])
+        camions.append(camions_0[len(camions_0)-1-j])
+    #on obtient un liste de camions triés par ordre décroissant de profit
     while i<len(camions):
-        if s<=B :
+        
+        if s+camions[i][1]<=B and camions[i] not in liste_trucks: #on vérifie que le coût n"excède pas le budget.
             liste_trucks.append(camions[i])
             s=s+camions[i][1]
         i=i+1
+
+    n=len(liste_trucks)
+    print(s)
+
     return sum([j[2] for j in liste_trucks]),liste_trucks
+
+def glouton(filename,filename_1,filename_2,B):
+    cout_profit=etape_2(filename,filename_1,filename_2)
+    return solutions_approximatives(cout_profit, B)
 
 
         

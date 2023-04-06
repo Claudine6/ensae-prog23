@@ -241,7 +241,7 @@ def krustal():
             min_tree.append([n_1,n_2,p_m]) #si les deux nodes ne font pas partie du même graphe connexe alors on ajoute l'edge entre les deux.
             self.union(x, y, link, rank)
         
-     return min_tree
+    return min_tree
 
 def estimated_time(filename):
     with open(filename, "r") as file:
@@ -252,3 +252,28 @@ def estimated_time(filename):
             g.min_power(scr,dest,t)
         end=timz.perf_counter()
     return ((end-start)/10)*len(T)
+
+def solutions_approximatives(cout_profit,B) :
+    camions_0=sorted(cout_profit, key=lambda item: item[2] )
+    camions=[]
+    liste_trucks=[]
+    s=0
+    i=0
+    for j in range(len(camions_0)):
+        camions.append(camions_0[len(camions_0)-1-j])
+    print(camions)
+    while i<len(camions):
+        
+        if s+camions[i][1]<=B and camions[i] not in liste_trucks:
+            liste_trucks.append(camions[i])
+            s=s+camions[i][1]
+        i=i+1
+
+    n=len(liste_trucks)
+    print(s)
+
+    return sum([j[2] for j in liste_trucks]),liste_trucks
+
+B=10
+camion=[[1000,5,300],[300,5,500],[10,3,45]]
+print(solutions_approximatives(camion,B))

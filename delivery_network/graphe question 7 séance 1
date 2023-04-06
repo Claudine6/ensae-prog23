@@ -5,7 +5,8 @@ import graphviz
 graph2 = graphviz.Graph(format="png")
 
 g = graph_from_file("input/network.00.in")
-L = g.min_power(1, 4)
+L = g.min_power(1, 5)
+print(L)
 t = L[1]
 H = []
 for nodes in g.nodes:
