@@ -424,7 +424,7 @@ def route_x_out(filename,filename_1): #question 6
     with open(filename_1, "r") as file:
         n = int(file.readline())
         f.write(str(n)+"\n")
-        for j in range(n-1):
+        for j in range(n):
             src,dest,profit=list(map(int, file.readline().split()))
             g_mst.dfs()
             power_min=g_mst.get_power_and_path(src,dest)[0]
@@ -479,6 +479,7 @@ def etape_2(filename,filename_1,filename_2):
         m=int(file.readline())
         for j in range(m):
             power.append(int(file.readline())) #liste avec les puissances min pour chaque trajet
+    print(len(power))
     with open(filename_1, "r") as file:
         n=int(file.readline())
         for j in range(n):
@@ -493,29 +494,88 @@ def etape_2(filename,filename_1,filename_2):
             trucks_possible=[]
     return cout_profit
 
-def force_brute(filename,filename_1,filename_2,B):
-    cout_profit=etape_2(filename,filename_1,filename_2)
-    
-    def force_brute_1(B,camions,camions_selected=[]):
+def force_brute_1(B,camions,camions_selected=[]):
 
-        if camions!=[]: #est ce qu'il reste encore des éléments à traiter ? si non alors on les a déjà tous passés en revue
-            profit_1, liste_trucks_1=force_brute_1(B,camions[1:],camions_selected) #ici on considère une combinaison privée de notre camion (elements[1:])  
-            truck=camions[0]
-            if truck[1]<= B:
-                camions_selected.append(truck)  #on vérifie qu'on peut ajouter le camion en comparant son cout au budget. 
-                profit_2,liste_trucks_2=force_brute_1(B-truck[1],camions[1:],camions_selected) #ici on a ajouté le camion dans la combinaison 
-                if profit_1 < profit_2 : #on ne conserve que la combinaison avec le plus grand profit 
-                    return profit_2,liste_trucks_2
-            return profit_1,liste_trucks_1
+    if camions!=[]:#est ce qu'il reste encore des éléments à traiter ? si non alors on les a déjà tous passés en revue
+        if camions_selected!=[]: 
+            B=B-sum(i[1] for i in camions_selected)
+        profit_1, liste_trucks_1=force_brute_1(B,camions[1:],camions_selected) #ici on considère une combinaison privée de notre camion (elements[1:])  
+        truck=camions[0]
+        if truck[1]<= B and truck not in camions_selected: #on vérifie qu'on peut ajouter le camion en comparant son cout au budget.
+            camions_selected.append(truck)  
+            print(truck,B)
+            profit_2,liste_trucks_2=force_brute_1(B-truck[1],camions[1:],camions_selected) #ici on a ajouté le camion dans la combinaison 
+            print(profit_1,profit_2)
+            if profit_1 < profit_2 : #on ne conserve que la combinaison avec le plus grand profit 
+                return profit_2,liste_trucks_2
+        return profit_1,liste_trucks_1
+
+    else :
+        if camions_selected!=[]:  
+            return  sum([i[2] for i in camions_selected]), camions_selected
 
         else :
-            if camions_selected!=[]:  
-                return  sum([i[2] for i in camions_selected]), camions_selected
+            return (0,[])
 
-            else :
-                return (0,[])
+def force_brute(filename,filename_1,filename_2,B):
+    cout_profit=etape_2(filename,filename_1,filename_2)
 
     return force_brute_1(B,cout_profit)
+
+def programmation_dynamique(B,camions,n):
+    cout=[i[1] for i in camions]
+    profit=[i[2] for i in camions]
+    matrice=[[0 for i in range(B+1)] for j in range(len(profit)+1)]
+
+    for k in range (0,B):
+        if n==0:
+            return 0
+    for i in range(1,len(profit)+1):
+        for j in range(1,B+1):
+            if cout[i-1]<=j:
+                matrice[i][j] = max(profit[i-1]+matrice[i-1][j-cout[i-1]], matrice[i-1][j])
+            else :
+                matrice[i][j]= matrice[i-1][j]
+    print(matrice)
+    c=B
+    n=len(profit)
+    trucks_selected=[]
+    while c>=0 and n>=0:
+        e=camions[n-1]
+        if c>=e[1] and matrice[n][c] == matrice[n-1][c-e[1]] + e[2]:
+            trucks_selected.append(e)
+            c=c-e[1]
+            print("c vaut" + str(c))
+        n=n-1
+        print ("n vaut" + str(n))
+    
+    return matrice[-1][-1],trucks_selected
+
+    def question_18_dynamique(filename,filename_1,filename_2,B):
+        cout_profit=etape_2(filename,filename_1,filename_2)
+        n=len(cout_profit)
+        return programmation_dynamique(B, cout_profit, n)
+
+
+         
+
+
+def solutions_approximatives(filename,filename_1,filename_2,B) :
+    cout_profit=etape_2(filename,filename_1,filename_2)
+    camions_0=sorted(cout_profit, key=lambda item: item[2] )
+    camions=[]
+    liste_trucks=[]
+    s=0
+    for j in range(len(camions_0)):
+        camions.append(camions_0[len(camions_0)-1-i])
+    while i<len(camions):
+        if s<=B :
+            liste_trucks.append(camions[i])
+            s=s+camions[i][1]
+        i=i+1
+    return sum([j[2] for j in liste_trucks]),liste_trucks
+        
+    
 
 
 

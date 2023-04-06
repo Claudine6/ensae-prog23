@@ -1,4 +1,4 @@
-from CMpro import Graph, graph_from_file, find, union, kruskal, route_x_out, preprocessing_test, etape_2, force_brute
+from CMpro import Graph, graph_from_file, find, union, kruskal, route_x_out, preprocessing_test, etape_2, force_brute, force_brute_1, programmation_dynamique
 
 
 data_path = "input/"
@@ -14,4 +14,10 @@ route_x_out("input/network.1.in","input/routes.1.in")
 """print(preprocessing_test("delivery_network/trucks.in"))
 print(etape_2("input/network.1.in","input/routes.1.in","input/trucks1.in"))
 print(len(etape_2("input/network.1.in","input/routes.1.in","input/trucks1.in")))"""
-print(force_brute("input/network.1.in","input/routes.1.in","input/trucks1.in",500000))
+"""print(force_brute("input/network.1.in","input/routes.1.in","input/trucks1.in",500000))"""
+ 
+B=10
+camions=[[1000,5,300],[300,5,500],[10,3,45]]
+print(force_brute_1(B,camions))
+
+"""print(programmation_dynamique(B,camions,3))"""
