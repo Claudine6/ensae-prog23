@@ -85,24 +85,29 @@ class Graph:
 
         We use booleans in order not to have any 'infinite' loop.
         """
-        visited={nodes:False for nodes in self.nodes}
-        path=[]
+        def dfs(src, dest, path=[]):
+            # Ajouter le nœud de départ au chemin actuel
+            path = path + [src]
 
-        def visite(nodes,path):
-            visited[nodes]=True
-            path.append(nodes)
-            if nodes==dest:
+            # Vérifier si le nœud de départ est égal au nœud d'arrivée
+            if src == dest:
                 return path
-            elif nodes!=dest:
-                for neighbor in self.graph[nodes]:
-                    power_c,neighbor_id=neighbor[1],neighbor[0]
-                    if visited[neighbor_id]==False and power_c<=power:
-                        return visite(neighbor_id,path)
-                    elif visited[neighbor_id]== True and nodes==dest:
-                        return path
-            return None 
-        
-        t=visite(src,path)
+
+            # Vérifier si le nœud de départ existe dans le graphe
+            if src not in self.graph:
+                return None
+
+            # Parcourir les voisins du nœud de départ
+            for node in self.graph[src]:
+                # Vérifier si le voisin n'a pas encore été visité et si la puissance de l'arête
+                # est inférieure à celle du camion. 
+                if node[0] not in path and node[1] <= power:
+                    # Appel récursif pour explorer le voisin
+                    new_path = dfs(node[0], dest, path)
+                    if new_path is not None:
+                        return new_path
+
+        t = dfs(src, dest)
         return t
 
     """
@@ -176,6 +181,7 @@ class Graph:
         i=0 
         while i<len(L) and self.get_path_with_power(src,dest,L[i])== None:
             i=i+1
+            
         return L[i],self.get_path_with_power(src,dest,L[i])
 
     def dfs(self): #question 5 séance 2 
@@ -196,11 +202,6 @@ class Graph:
               
         depths,parents=explore(self.nodes[0], 0)
         
-        """for nodes in self.nodes:
-            for neighbor,power_min,dist in self.graph[nodes]:
-                if neighbor not in visited_1 :
-                    visited_1.append(neighbor)
-                    parents[neighbor]=[nodes,power_min]"""
         
 
         return depths,parents
@@ -325,7 +326,7 @@ def find(nodes, link):
     """ Finds the connected graph in which the node is.
     link is like the index of the connected graph."""
     #on veut trouver grâce à cette fonction dans quel graphe le noeud est.
-        #si deux noeuds ont le même link alors ils sont dans le même graphe
+    #si deux noeuds ont le même link alors ils sont dans le même graphe
     if link[nodes]==nodes: 
         return nodes
     return find(link[nodes],link)
@@ -431,15 +432,16 @@ def route_x_out(filename,filename_1): #question 6
             f.write(str(power_min)+"\n")
         f.close()
 
-# Séance 4 
+# Séance 4 à 6 : 
 
-def preprocessing_test(filename):
+def preprocessing(filename):
+    """Takes a list of trucks and returns another list of trucks 
+    made from the old one but in which some trucks have been removed """
     with open(filename, "r") as file:
         n=int(file.readline())
         truck=[]
         for i in range(n):
             truck.append(list(map(int, file.readline().split())))
-
 
         truck_cout=sorted(truck, key=lambda item: item[1])
         to_delete=[]
@@ -495,7 +497,12 @@ def etape_2(filename,filename_1,filename_2):
     return cout_profit
 
 def force_brute_1(B,camions,camions_selected=[]):
-
+    """"Returns the optimal solution of the profit-maximization 
+    problem under budget constraints
+    B is the budget 
+    camions is a list of trucks 
+    camions_selected represents a list of trucks selected in the same combination
+    """
     if camions!=[]:#est ce qu'il reste encore des éléments à traiter ? si non alors on les a déjà tous passés en revue
         if camions_selected!=[]: 
             B=B-sum(i[1] for i in camions_selected)
@@ -523,6 +530,12 @@ def force_brute(filename,filename_1,filename_2,B):
     return force_brute_1(B,cout_profit)
 
 def programmation_dynamique(B,camions,n):
+    """ Returns the optimal solution of the profit-maximization 
+    problem under budget constraints
+    camions is a list of trucks 
+    n is the length of camions 
+    B is the budget
+    """
     cout=[i[1] for i in camions]
     profit=[i[2] for i in camions]
     matrice=[[0 for i in range(B+1)] for j in range(len(profit)+1)]
@@ -533,10 +546,12 @@ def programmation_dynamique(B,camions,n):
     for i in range(1,len(profit)+1):
         for j in range(1,B+1):
             if cout[i-1]<=j:
-                matrice[i][j] = max(profit[i-1]+matrice[i-1][j-cout[i-1]], matrice[i-1][j])
+                matrice[i][j] = max(profit[i-1]+matrice[i-1][j-cout[i-1]], matrice[i-1][j]) 
+            #ici on représente les deux choix possibles de solution
             else :
                 matrice[i][j]= matrice[i-1][j]
-    print(matrice)
+    
+    #cette partie sert à récupérer la liste des camions. 
     c=B
     n=len(profit)
     trucks_selected=[]
@@ -556,10 +571,36 @@ def programmation_dynamique(B,camions,n):
         n=len(cout_profit)
         return programmation_dynamique(B, cout_profit, n)
 
-
+def greedy_knapsack(self, file_route, file_truck):
+    """Approximative solution
+    We choose the most profitable routes 
+    until we cannot affect one single truck to a route
+    should return a list with
+    for each route in routes : the truck chosen and the profit
+    and the cost of the approximative solution
+    """
+    B = 25*(10**9)
+    Res = []
+    super_list = etape_2(self, file_route, file_truck)
+    n = len(super_list)
+    super_list = sorted(super_list, key=lambda item: item[2], reverse=True) # sorting of the list to look at the routes with the highest profit first
+    totalcost = 0
+    for j in range(n):
+        i = super_list[j]
+        cost = i[1]
+        totalcost += cost
+        if totalcost <= B:
+            profit_route = i[2]
+            right_truck = [[i[0]] + [i[1]]]
+            Res.append(right_truck + [profit_route]) # we add the truck and the profit to the list of the chosen combinations
+            j += 1
+        else:
+            totalcost -= cost
+            j = n-1 # If totalcost cannot be increased without exceeding the budget, we want to go out of the loop "for"
+    return Res, totalcost
          
 
-
+#autre version de l'algorithme glouton pour les solutions approximatives. 
 def solutions_approximatives(filename,filename_1,filename_2,B) :
     cout_profit=etape_2(filename,filename_1,filename_2)
     camions_0=sorted(cout_profit, key=lambda item: item[2] )
@@ -574,6 +615,8 @@ def solutions_approximatives(filename,filename_1,filename_2,B) :
             s=s+camions[i][1]
         i=i+1
     return sum([j[2] for j in liste_trucks]),liste_trucks
+
+
         
     
 
